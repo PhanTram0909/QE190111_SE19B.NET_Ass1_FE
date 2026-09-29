@@ -79,6 +79,7 @@ export interface Tag {
 export interface DepartmentCreateDto {
   departmentName: string;
   departmentDescription?: string;
+  isActive?: boolean;
 }
 
 export interface DepartmentUpdateDto extends DepartmentCreateDto {
@@ -89,9 +90,10 @@ export interface ProjectCreateDto {
   projectName: string;
   description?: string;
   startDate?: string;
-  endDate?: string;
+  endDate?: string | null;
   status: ProjectStatus;
   departmentID: number;
+  isActive?: boolean;
 }
 
 export interface ProjectUpdateDto extends ProjectCreateDto {
@@ -103,8 +105,9 @@ export interface TaskCreateDto {
   description?: string;
   status: TaskStatusEnum;
   priority: TaskPriority;
-  dueDate?: string;
+  dueDate?: string | null;
   projectID: number;
+  isActive?: boolean;
   tagIDs?: number[];
 }
 
