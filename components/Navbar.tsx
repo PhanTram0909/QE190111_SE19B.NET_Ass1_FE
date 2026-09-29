@@ -1,134 +1,183 @@
 "use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard, Building2, FolderKanban, CheckSquare,
-  Search, Settings, Tag, Menu, X, ChevronDown, Zap,
+  Search, Settings, Tag, Menu, X, ChevronDown, Sparkles
 } from "lucide-react";
 import { clsx } from "clsx";
 
 const navLinks = [
-  { href: "/", label: "Home", icon: LayoutDashboard },
+  { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/departments", label: "Departments", icon: Building2 },
   { href: "/search", label: "Search", icon: Search },
 ];
 
 const manageLinks = [
-  { href: "/departments/manage", label: "Departments", icon: Building2 },
-  { href: "/projects/manage", label: "Projects", icon: FolderKanban },
-  { href: "/tasks/manage", label: "Tasks", icon: CheckSquare },
-  { href: "/tags/manage", label: "Tags", icon: Tag },
+  { href: "/departments/manage", label: "Departments", icon: Building2, desc: "Manage company units" },
+  { href: "/projects/manage", label: "Projects", icon: FolderKanban, desc: "Assign & track projects" },
+  { href: "/tasks/manage", label: "Tasks", icon: CheckSquare, desc: "Update tasks & priorities" },
+  { href: "/tags/manage", label: "Tags", icon: Tag, desc: "Labels & custom colors" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-slate-700/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center
-                            group-hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/30">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-lg text-white tracking-tight">
-              Task<span className="text-indigo-400">Track</span>
-            </span>
-          </Link>
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setManageOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-1">
+  return (
+    <header className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 sm:px-6 pointer-events-none">
+      <nav className="pointer-events-auto w-full max-w-5xl rounded-full bg-[#12141f]/70 backdrop-blur-2xl border border-white/[0.12] shadow-[0_12px_40px_rgba(0,0,0,0.45)] px-4 py-2 flex items-center justify-between transition-all">
+        {/* Brand */}
+        <Link href="/" className="flex items-center gap-2.5 group pl-1">
+          <div className="w-8 h-8 rounded-[11px] bg-gradient-to-tr from-blue-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-md shadow-blue-500/30 group-hover:scale-105 transition-transform duration-200">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-bold text-base tracking-tight text-white flex items-center gap-1">
+            Task<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">Track</span>
+          </span>
+        </Link>
+
+        {/* Desktop Links */}
+        <div className="hidden md:flex items-center gap-1 bg-white/[0.04] p-1 rounded-full border border-white/[0.06]">
+          {navLinks.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className={clsx(
+                "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+                isActive(href)
+                  ? "bg-white/[0.14] text-white shadow-sm border border-white/[0.14] font-semibold"
+                  : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+              )}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Action Controls & Manage Dropdown */}
+        <div className="hidden md:flex items-center gap-2">
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setManageOpen(!manageOpen)}
+              className={clsx(
+                "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border",
+                manageOpen || pathname.includes("/manage")
+                  ? "bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30"
+                  : "bg-white/[0.06] text-slate-300 border-white/[0.1] hover:bg-white/[0.1] hover:text-white"
+              )}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Manage
+              <ChevronDown className={clsx("w-3 h-3 transition-transform duration-200", manageOpen && "rotate-180")} />
+            </button>
+
+            {/* iOS Context Menu Dropdown */}
+            {manageOpen && (
+              <div className="absolute right-0 mt-3 w-64 rounded-[22px] bg-[#141624]/90 backdrop-blur-3xl border border-white/[0.14] shadow-[0_16px_50px_rgba(0,0,0,0.6)] p-2 animate-fade-in z-50">
+                <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  Management Tools
+                </div>
+                <div className="space-y-1">
+                  {manageLinks.map(({ href, label, icon: Icon, desc }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setManageOpen(false)}
+                      className={clsx(
+                        "flex items-center gap-3 px-3 py-2 rounded-[14px] text-xs transition-all duration-150 group",
+                        pathname === href
+                          ? "bg-blue-600/25 text-blue-300 border border-blue-500/30 font-medium"
+                          : "text-slate-300 hover:bg-white/[0.08] hover:text-white"
+                      )}
+                    >
+                      <div className="w-7 h-7 rounded-[10px] bg-white/[0.06] flex items-center justify-center text-slate-300 group-hover:text-blue-400 group-hover:scale-105 transition-all">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-100">{label}</div>
+                        <div className="text-[10px] text-slate-400">{desc}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Toggle */}
+        <div className="md:hidden flex items-center">
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="p-1.5 rounded-full bg-white/[0.06] text-slate-300 hover:text-white border border-white/[0.1]"
+          >
+            {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Drawer (iOS Sheet Style) */}
+      {mobileOpen && (
+        <div className="fixed inset-x-4 top-20 pointer-events-auto md:hidden rounded-[26px] bg-[#12141f]/95 backdrop-blur-3xl border border-white/[0.14] shadow-2xl p-4 animate-fade-in z-50 space-y-3">
+          <div className="space-y-1">
             {navLinks.map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href}
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMobileOpen(false)}
                 className={clsx(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  "flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all",
                   isActive(href)
-                    ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-700/50"
-                )}>
+                    ? "bg-blue-600 text-white"
+                    : "text-slate-300 hover:bg-white/[0.06]"
+                )}
+              >
                 <Icon className="w-4 h-4" />
                 {label}
               </Link>
             ))}
-
-            {/* Manage Dropdown */}
-            <div className="relative">
-              <button onClick={() => setManageOpen(!manageOpen)}
-                className={clsx(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                  pathname.includes("/manage")
-                    ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-700/50"
-                )}>
-                <Settings className="w-4 h-4" />
-                Manage
-                <ChevronDown className={clsx("w-3.5 h-3.5 transition-transform", manageOpen && "rotate-180")} />
-              </button>
-
-              {manageOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setManageOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-52 glass rounded-xl border border-slate-700/50 shadow-2xl z-20 py-1 modal-content">
-                    {manageLinks.map(({ href, label, icon: Icon }) => (
-                      <Link key={href} href={href}
-                        onClick={() => setManageOpen(false)}
-                        className={clsx(
-                          "flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
-                          pathname === href
-                            ? "text-indigo-300 bg-indigo-600/10"
-                            : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-                        )}>
-                        <Icon className="w-4 h-4" />
-                        {label}
-                      </Link>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
           </div>
 
-          {/* Mobile toggle */}
-          <button onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors">
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-slate-700/50 py-3 px-4 space-y-1 modal-content">
-          {navLinks.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href} onClick={() => setMobileOpen(false)}
-              className={clsx(
-                "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium",
-                isActive(href)
-                  ? "bg-indigo-600/20 text-indigo-300"
-                  : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-              )}>
-              <Icon className="w-4 h-4" />{label}
-            </Link>
-          ))}
-          <div className="border-t border-slate-700/50 pt-2 mt-2">
-            <p className="text-xs text-slate-500 px-3 pb-1 uppercase tracking-wider">Manage</p>
-            {manageLinks.map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href} onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-700/50">
-                <Icon className="w-4 h-4" />{label}
-              </Link>
-            ))}
+          <div className="pt-2 border-t border-white/[0.08]">
+            <div className="px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              Manage
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              {manageLinks.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.04] text-xs text-slate-200 border border-white/[0.06] active:bg-blue-600"
+                >
+                  <Icon className="w-3.5 h-3.5 text-blue-400" />
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 }
