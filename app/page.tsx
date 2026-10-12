@@ -42,7 +42,7 @@ export default function HomePage() {
       icon: FolderKanban,
       gradient: "from-indigo-500 via-purple-500 to-pink-500",
       glow: "shadow-purple-500/20",
-      href: "/projects/manage",
+      href: "/admin/projects",
       desc: "Cross-functional teams",
     },
     {
@@ -51,7 +51,7 @@ export default function HomePage() {
       icon: CheckSquare,
       gradient: "from-emerald-400 to-teal-500",
       glow: "shadow-emerald-500/20",
-      href: "/tasks/manage",
+      href: "/admin/tasks",
       desc: "Total assignments",
     },
   ];
@@ -139,7 +139,7 @@ export default function HomePage() {
             <p className="text-xs text-slate-400">Current initiatives across departments</p>
           </div>
           <Link
-            href="/projects/manage"
+            href="/admin/projects"
             className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
           >
             Manage All <ArrowRight className="w-3.5 h-3.5" />

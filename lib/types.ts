@@ -20,6 +20,11 @@ export enum TaskPriority {
   Critical = 3,
 }
 
+export enum UserRole {
+  Staff = 0,
+  Admin = 1,
+}
+
 // ─── Entity interfaces ────────────────────────────────────────────────────────
 export interface Department {
   departmentID: number;
@@ -63,6 +68,7 @@ export interface Task {
   isActive: boolean;
   createdDate: string;
   modifiedDate?: string;
+  createdByID?: number;
 }
 
 export interface TaskDetail extends Task {
@@ -73,6 +79,15 @@ export interface Tag {
   tagID: number;
   tagName: string;
   color?: string;
+}
+
+export interface SystemAccount {
+  accountID: number;
+  fullName: string;
+  email: string;
+  role: number;
+  roleLabel: string;
+  createdDate: string;
 }
 
 // ─── Create / Update DTOs ─────────────────────────────────────────────────────
@@ -119,6 +134,28 @@ export interface TagCreateDto {
 }
 
 export interface TagUpdateDto extends TagCreateDto {}
+
+// ─── Auth DTOs ────────────────────────────────────────────────────────────────
+export interface RegisterDto {
+  fullName: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  account: SystemAccount;
+}
+
+export interface AccountUpdateDto {
+  fullName: string;
+  role: number;
+}
 
 // ─── API error shape ──────────────────────────────────────────────────────────
 export interface ApiError {
